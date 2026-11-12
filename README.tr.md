@@ -1,5 +1,7 @@
 # fastfind
 
+[![CI](https://github.com/ismailkarakayax/fastfind/actions/workflows/ci.yml/badge.svg)](https://github.com/ismailkarakayax/fastfind/actions/workflows/ci.yml)
+
 [English](README.md) | **Türkçe**
 
 Rust ile yazılmış, komut satırı için çok hızlı ve paralel çalışan bir **dosya adı** arama aracı.
@@ -42,7 +44,7 @@ Kendi bilgisayarınızda [`scripts/bench.ps1`](scripts/bench.ps1) ile tekrarlaya
 [Rust](https://rustup.rs) gerekli.
 
 ```bash
-git clone https://github.com/<user>/fastfind
+git clone https://github.com/ismailkarakayax/fastfind
 cd fastfind
 cargo install --path .
 ```

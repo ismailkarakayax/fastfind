@@ -1,5 +1,7 @@
 # fastfind
 
+[![CI](https://github.com/ismailkarakayax/fastfind/actions/workflows/ci.yml/badge.svg)](https://github.com/ismailkarakayax/fastfind/actions/workflows/ci.yml)
+
 **English** | [Türkçe](README.tr.md)
 
 Blazing fast, parallel **file name** search for the command line, written in Rust.
@@ -42,7 +44,7 @@ Reproduce on your own machine with [`scripts/bench.ps1`](scripts/bench.ps1).
 You need [Rust](https://rustup.rs).
 
 ```bash
-git clone https://github.com/<user>/fastfind
+git clone https://github.com/ismailkarakayax/fastfind
 cd fastfind
 cargo install --path .
 ```

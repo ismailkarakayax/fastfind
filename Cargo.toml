@@ -6,6 +6,7 @@ rust-version = "1.80"
 description = "Blazing fast, parallel file name search for the command line"
 license = "MIT"
 readme = "README.md"
+repository = "https://github.com/ismailkarakayax/fastfind"
 keywords = ["find", "search", "files", "cli", "parallel"]
 categories = ["command-line-utilities", "filesystem"]
 
