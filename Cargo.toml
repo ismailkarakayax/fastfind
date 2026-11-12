@@ -1,0 +1,30 @@
+[package]
+name = "fastfind"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+description = "Blazing fast, parallel file name search for the command line"
+license = "MIT"
+readme = "README.md"
+keywords = ["find", "search", "files", "cli", "parallel"]
+categories = ["command-line-utilities", "filesystem"]
+
+[dependencies]
+anstream = "1"
+anstyle = "1"
+clap = { version = "4.5", features = ["derive"] }
+crossbeam-channel = "0.5"
+globset = "0.4"
+ignore = "0.4.23"
+regex = "1.11"
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
+tempfile = "3"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+strip = true
+panic = "abort"
