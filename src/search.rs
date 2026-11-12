@@ -5,8 +5,16 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering::Relaxed};
 use crossbeam_channel::Sender;
 use ignore::{DirEntry, ParallelVisitor, ParallelVisitorBuilder, WalkBuilder, WalkState};
 
-use crate::cli::FileType;
 use crate::matcher::Matcher;
+
+/// Restricts results to files or directories.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, clap::ValueEnum)]
+pub enum FileType {
+    #[value(name = "f", alias = "file")]
+    File,
+    #[value(name = "d", alias = "dir")]
+    Dir,
+}
 
 pub struct Options {
     pub roots: Vec<PathBuf>,
@@ -87,8 +95,8 @@ impl<'a> ParallelVisitorBuilder<'a> for WorkerBuilder<'a> {
     }
 }
 
-/// One per thread. Counters are kept locally and merged once on drop, so
-/// the hot path never touches a shared cache line.
+/// One per thread. Counters are kept locally and merged in batches, so the
+/// hot path almost never touches a shared cache line.
 struct Worker<'a> {
     opts: &'a Options,
     matcher: &'a Matcher,
@@ -116,6 +124,10 @@ impl ParallelVisitor for Worker<'_> {
             return WalkState::Continue;
         }
         self.scanned += 1;
+        // Publish progress now and then (cheap), so a UI can show live counts.
+        if self.scanned == FLUSH_EVERY {
+            self.flush();
+        }
 
         if let Some(wanted) = self.opts.file_type {
             let is_dir = entry.file_type().is_some_and(|t| t.is_dir());
@@ -160,11 +172,34 @@ impl ParallelVisitor for Worker<'_> {
     }
 }
 
-impl Drop for Worker<'_> {
-    fn drop(&mut self) {
+/// How many entries a worker counts locally before publishing them.
+const FLUSH_EVERY: u64 = 4096;
+
+impl Worker<'_> {
+    fn flush(&mut self) {
         self.stats.scanned.fetch_add(self.scanned, Relaxed);
         self.stats.skipped.fetch_add(self.skipped, Relaxed);
+        self.scanned = 0;
+        self.skipped = 0;
     }
+}
+
+impl Drop for Worker<'_> {
+    fn drop(&mut self) {
+        self.flush();
+    }
+}
+
+/// Turns user input like `["pdf", ".DOCX", "jpg, png"]` into clean
+/// extensions without dots: `["pdf", "DOCX", "jpg", "png"]`.
+pub fn parse_extensions<'a>(items: impl IntoIterator<Item = &'a str>) -> Vec<String> {
+    items
+        .into_iter()
+        .flat_map(|s| s.split([',', ';', ' ']))
+        .map(|e| e.trim().trim_start_matches('.'))
+        .filter(|e| !e.is_empty())
+        .map(String::from)
+        .collect()
 }
 
 /// `extensions` must already be stripped of leading dots.
@@ -183,10 +218,19 @@ fn extension_matches(name: &str, extensions: &[String]) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::extension_matches;
+    use super::{extension_matches, parse_extensions};
 
     fn exts(list: &[&str]) -> Vec<String> {
         list.iter().map(|s| s.to_string()).collect()
+    }
+
+    #[test]
+    fn parses_extension_lists() {
+        assert_eq!(
+            parse_extensions(["pdf", ".DOCX", "jpg, png", " ;.txt "]),
+            exts(&["pdf", "DOCX", "jpg", "png", "txt"])
+        );
+        assert!(parse_extensions([""]).is_empty());
     }
 
     #[test]

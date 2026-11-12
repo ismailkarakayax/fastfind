@@ -2,7 +2,7 @@ use std::io::{self, Write};
 
 use anstyle::{AnsiColor, Style};
 
-use crate::search::Hit;
+use fastfind::search::Hit;
 
 const DIR_STYLE: Style = Style::new().fg_color(Some(anstyle::Color::Ansi(AnsiColor::Blue)));
 const MATCH_STYLE: Style = Style::new()

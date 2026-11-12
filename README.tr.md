@@ -14,6 +14,10 @@ C:\Users\ben\Masaüstü\eski\Rapor.pdf
 2 results · 184,302 entries scanned · 0.41s
 ```
 
+Küçük bir **masaüstü uygulaması** da var:
+
+![fastfind masaüstü uygulaması](docs/screenshot.png)
+
 ## Neden?
 
 Windows Gezgini'nin araması yalnızca indekslenmiş yerlerde hızlı. İndeks dışındaki
@@ -77,6 +81,32 @@ gider, böylece stdout pipe'lar için temiz kalır.
 
 Tüm seçenekler için `fastfind --help` komutunu çalıştırın.
 
+## Masaüstü uygulaması
+
+`fastfind-gui`, aynı arama motorunu kullanan ve [egui](https://github.com/emilk/egui)
+ile yazılmış yerel bir penceredir.
+
+```bash
+cargo run --release --features gui --bin fastfind-gui
+```
+
+Komut satırı aracını ve uygulamayı birlikte kurmak için:
+
+```bash
+cargo install --path . --features gui
+```
+
+- Eşleşme türünü (içerir / glob / regex), dosya veya klasör seçimini, gizli
+  dosyaları, `.gitignore` kurallarını ve uzantıları seçebilirsiniz.
+- Sonuçlar arama sürerken **canlı olarak** listeye akar ve pencere donmaz.
+  Sadece ekranda görünen satırlar çizildiği için milyonlarca sonuç bile takılmadan kayar.
+- Bir sonuca **çift tıklayınca** Gezgin'de gösterilir. **Sağ tıklayınca** dosyayı
+  açabilir ya da yolunu kopyalayabilirsiniz. **Esc** aramayı durdurur.
+- Arayüz İngilizce ve Türkçedir, sistem dilini takip eder. Son aramanız ve
+  seçenekleriniz hatırlanır.
+
+Linux'ta klasör seçme penceresi için GTK 3 (`libgtk-3-dev`) gerekir.
+
 ## Neden bu kadar hızlı?
 
 - **Paralel gezinme:** ripgrep ve fd'nin de kullandığı [`ignore`](https://crates.io/crates/ignore)
@@ -84,8 +114,8 @@ Tüm seçenekler için `fastfind --help` komutunu çalıştırın.
 - **Yalnızca isimler:** hiçbir dosya açılmaz, isim doğrudan klasör listesinden gelir.
 - **SIMD ile metin arama:** alt dizgi aramaları `regex` kütüphanesi tarafından
   vektörleştirilmiş bir eşleştiriciye derlenir.
-- **Paylaşılan sayaç yok:** her iş parçacığı kendi sayacını tutar ve sonunda bir kez
-  birleştirir. Böylece iş parçacıkları aynı önbellek satırı için çekişmez.
+- **Paylaşılan sayaç yok:** her iş parçacığı kendi sayacını tutar ve bunu sadece her
+  4.096 girdide bir paylaşır. Böylece iş parçacıkları aynı önbellek satırı için çekişmez.
 - **Tek tamponlu yazıcı:** iş parçacıkları sonuçları bir kanal üzerinden tek bir yazıcıya
   gönderir. Bu yazıcı her satırda stdout'u kilitlemek yerine 64 KB'lık bir tampon kullanır.
 - **Release profili:** fat LTO, tek codegen birimi, `panic = "abort"`.

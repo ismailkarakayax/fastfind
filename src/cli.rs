@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Parser, ValueEnum};
+use fastfind::search::FileType;
 
 /// Blazing fast, parallel file name search.
 ///
@@ -68,14 +69,6 @@ pub struct Args {
     /// Don't print the summary line
     #[arg(short = 'q', long)]
     pub quiet: bool,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
-pub enum FileType {
-    #[value(name = "f", alias = "file")]
-    File,
-    #[value(name = "d", alias = "dir")]
-    Dir,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]

@@ -1,7 +1,5 @@
 mod cli;
-mod matcher;
 mod output;
-mod search;
 
 use std::io::{self, BufWriter};
 use std::path::PathBuf;
@@ -13,9 +11,9 @@ use anstream::{AutoStream, ColorChoice};
 use clap::Parser;
 
 use cli::{Args, ColorWhen};
-use matcher::{Matcher, Mode};
+use fastfind::matcher::{Matcher, Mode};
+use fastfind::search::{self, Options, Stats};
 use output::{group_digits, Printer};
-use search::{Options, Stats};
 
 fn main() -> ExitCode {
     let args = Args::parse();
@@ -49,11 +47,7 @@ fn run(args: Args) -> Result<bool, String> {
         max_depth: args.max_depth,
         threads: args.threads,
         file_type: args.file_type,
-        extensions: args
-            .extensions
-            .iter()
-            .map(|e| e.trim_start_matches('.').to_string())
-            .collect(),
+        extensions: search::parse_extensions(args.extensions.iter().map(String::as_str)),
         max_results: args.max_results,
     };
 

@@ -14,6 +14,10 @@ C:\Users\me\Desktop\old\Report.pdf
 2 results · 184,302 entries scanned · 0.41s
 ```
 
+It also comes with a small **desktop app**:
+
+![fastfind desktop app](docs/screenshot.png)
+
 ## Why?
 
 Windows Explorer search is fast only for indexed locations. Outside the index
@@ -77,6 +81,32 @@ Exit codes: `0` = found something, `1` = no matches, `2` = error.
 
 Run `fastfind --help` for all options.
 
+## Desktop app
+
+`fastfind-gui` is a native window built with [egui](https://github.com/emilk/egui)
+on top of the same search engine.
+
+```bash
+cargo run --release --features gui --bin fastfind-gui
+```
+
+To install both the command line tool and the app:
+
+```bash
+cargo install --path . --features gui
+```
+
+- Pick the match type (contains / glob / regex), files or folders, hidden
+  files, `.gitignore` and extensions.
+- Results stream in **live** while the search runs, and the window never freezes.
+  Only visible rows are drawn, so even millions of results scroll smoothly.
+- **Double-click** a result to show it in Explorer. **Right-click** to open it or
+  copy its path. Press **Esc** to stop a search.
+- English and Turkish UI (follows the system language). Your last search and
+  options are remembered.
+
+On Linux, the folder picker needs GTK 3 (`libgtk-3-dev`).
+
 ## How is it fast?
 
 - **Parallel traversal:** uses the [`ignore`](https://crates.io/crates/ignore)
@@ -86,8 +116,8 @@ Run `fastfind --help` for all options.
   directory listing.
 - **SIMD literal search:** substring searches are compiled by the `regex` crate
   into a vectorized literal matcher.
-- **No shared hot counters:** each thread counts locally and merges once at the
-  end, so threads don't fight over a cache line.
+- **No shared hot counters:** each thread counts locally and publishes its
+  counts only every 4,096 entries, so threads don't fight over a cache line.
 - **Single buffered writer:** workers send hits over a channel to one thread
   that writes through a 64 KB buffer, instead of locking stdout per line.
 - **Release profile:** fat LTO, one codegen unit, `panic = "abort"`.
